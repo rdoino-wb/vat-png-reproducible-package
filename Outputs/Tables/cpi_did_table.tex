@@ -1,0 +1,18 @@
+{
+\def\sym#1{\ifmmode^{#1}\else\(^{#1}\)\fi}
+\begin{tabular}{l*{6}{c}}
+\toprule
+                    &\multicolumn{2}{c}{vs Comparable (28)}     &\multicolumn{2}{c}{vs Curated (6)}         &\multicolumn{2}{c}{vs CPI}                 \\\cmidrule(lr){2-3}\cmidrule(lr){4-5}\cmidrule(lr){6-7}
+                    &\multicolumn{1}{c}{Pooled}&\multicolumn{1}{c}{TWFE}&\multicolumn{1}{c}{Pooled}&\multicolumn{1}{c}{TWFE}&\multicolumn{1}{c}{Pooled}&\multicolumn{1}{c}{TWFE}\\
+\midrule
+Treatment $\times$ Post&      -8.255\sym{***}&      -8.255\sym{***}&      -8.864\sym{**} &      -8.864\sym{**} &      -4.418\sym{**} &      -4.418\sym{**} \\
+                    &     (2.262)         &     (2.287)         &     (3.578)         &     (3.672)         &     (1.752)         &     (1.821)         \\
+\midrule
+Observations        &         570         &         570         &         240         &         240         &         165         &         165         \\
+Adj. R-sq           &     0.00415         &       0.978         &      0.0317         &       0.938         &      0.0115         &       0.926         \\
+\bottomrule
+\multicolumn{7}{l}{\footnotesize Standard errors clustered by item in parentheses.}\\
+\multicolumn{7}{l}{\footnotesize * p<0.10, ** p<0.05, *** p<0.01.}\\
+\multicolumn{7}{l}{\footnotesize Sample: June 2022 -- December 2025. Treatment date: March 2025.}\\
+\end{tabular}
+}

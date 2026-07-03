@@ -1,0 +1,12 @@
+"Pass-through, p.p.",(1),(2),(3),(4),(5)
+Treatment,-3.1,-0.9,-0.0,-1.0,-1.0
+,(3.1),(2.6),(3.8),(2.5),(2.5)
+Treatment × Formal,—,-4.9,-7.3*,-1.3,-1.2
+,,(3.9),(4.3),(3.3),(3.3)
+Treatment × Urban,—,—,—,—,1.2
+,,,,,(2.9)
+Treatment × Formal × Urban,—,—,—,—,-6.7*
+,,,,,(3.9)
+Specification,Post,Post,Post,Post,Post
+Coverage,All,All,Urban,Rural,All
+N,""129,921"",""129,921"",""43,725"",""86,196"",""129,921""

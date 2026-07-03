@@ -1,0 +1,25 @@
+group,code,item,month,month_label,mean_expenditure,n_respondents
+Non-exempt,101,Sugar,4,Apr,6.608421973879089,1061
+Non-exempt,101,Sugar,5,May,7.068623784592371,764
+Non-exempt,101,Sugar,6,Jun,6.580671213208901,796
+Non-exempt,101,Sugar,7,Jul,5.997838616714698,694
+Non-exempt,125,Phone Credit,4,Apr,5.028544499798033,1061
+Non-exempt,125,Phone Credit,5,May,4.418380703066567,764
+Non-exempt,125,Phone Credit,6,Jun,3.84556712132089,796
+Non-exempt,125,Phone Credit,7,Jul,3.150988060930424,694
+Non-exempt,115,Sausages,4,Apr,2.457721825770836,1061
+Non-exempt,115,Sausages,5,May,2.784592370979805,764
+Non-exempt,115,Sausages,6,Jun,2.30437903804738,796
+Non-exempt,115,Sausages,7,Jul,2.261424454508028,694
+Non-exempt,102,Kaukau,4,Apr,1.326915309007675,1061
+Non-exempt,102,Kaukau,5,May,1.483732236350037,764
+Non-exempt,102,Kaukau,6,Jun,.8291457286432161,796
+Non-exempt,102,Kaukau,7,Jul,.6268011527377522,694
+Non-exempt,103,Bananas,4,Apr,1.257237107849737,1061
+Non-exempt,103,Bananas,5,May,1.114902767389679,764
+Non-exempt,103,Bananas,6,Jun,.9018305814788228,796
+Non-exempt,103,Bananas,7,Jul,.5002058460271717,694
+Non-exempt,111,Aibika,4,Apr,.6240743234145685,1061
+Non-exempt,111,Aibika,5,May,.6324794315632012,764
+Non-exempt,111,Aibika,6,Jun,.4280330222541278,796
+Non-exempt,111,Aibika,7,Jul,.5079250720461095,694
