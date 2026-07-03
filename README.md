@@ -82,7 +82,7 @@ main.R    R master: builds Figures 1 and 2, writes intermediates for Stata
 3_analysis/    Tables and figures (named by exhibit)
 4_online_appendix/  Online-price cleaning, Figure 4d, and the scrapers
 5_experts/     Expert prediction survey figures and Table A5
-docs/          Data availability statement and exhibit manifest
+docs/          Data availability statement, exhibit manifest, and exhibits.tex (compiles all figures/tables in paper order)
 ```
 
 Data-prep files are numbered in run order. Analysis files are named by the exhibit they produce (for example `table2_passthrough.do`, `fig5_incidence.do`, `figA19_event_study_hh.do`), so the manifest maps cleanly to filenames. Each script carries a header block stating its purpose, inputs, outputs, and dependencies.

@@ -15,7 +15,7 @@ Stage key: `[R]` runs in the R stage (`main.R`); all others run in Stata (`main.
 | Figure 4a | `figure_4a.png` | `3_analysis/fig4ab_event_study_competition.do` | 299 |
 | Figure 4b | `figure_4b.png` | `3_analysis/fig4ab_event_study_competition.do` | 332 |
 | Figure 4c | `figure_4c.png` | `3_analysis/fig4c_within_chain.do` | 254 |
-| Figure 4d | `event_study/figure_4d.png` | `4_online_appendix/fig4d_online_vs_instore.do` | 285 |
+| Figure 4d | `figure_4d.png` | `4_online_appendix/fig4d_online_vs_instore.do` | 285 |
 | Figure 5a | `figure5a.png` | `3_analysis/fig5_incidence.do` | 286 |
 | Figure 5b | `figure5b.png` | `3_analysis/fig5_incidence.do` | 307 |
 | Figure 6 | `figure6.png` | `5_experts/fig6_actual_vs_expert.do` | 171 |
@@ -32,8 +32,8 @@ Stage key: `[R]` runs in the R stage (`main.R`); all others run in Stata (`main.
 | Figure A5 | `figure_a5.png` | `3_analysis/figsA1_A7_consumption.do` | 167 |
 | Figure A6 | `figure_a6.png` | `3_analysis/figsA1_A7_consumption.do` | 205 |
 | Figure A7 | `figure_a7.png` | `3_analysis/figsA1_A7_consumption.do` | 117 |
-| Figure A10 | `consumption_behavior/figure_a10.png/.pdf` | `3_analysis/figsA10_A11_expenditure_trends.do` | 181 |
-| Figure A11 | `consumption_behavior/figure_a11.png/.pdf` | `3_analysis/figsA10_A11_expenditure_trends.do` | 206 |
+| Figure A10 | `figure_a10.png` | `3_analysis/figsA10_A11_expenditure_trends.do` | 180 |
+| Figure A11 | `figure_a11.png` | `3_analysis/figsA10_A11_expenditure_trends.do` | 204 |
 | Figure A12 | `figure_a12.png` | `3_analysis/cpi_did_robustness.do` | 299 |
 | Figure A13 | `figure_a13.png` | `3_analysis/cpi_did_robustness.do` | 406 |
 | Figure A14 | `figure_a14.png` | `3_analysis/figs3_A14_A15_combined_passthrough.do` | 185 |
