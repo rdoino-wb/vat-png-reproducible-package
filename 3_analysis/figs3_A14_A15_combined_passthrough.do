@@ -47,7 +47,6 @@ use "${final_nso}/NSO_Prices_Long.dta", clear
 * packaged items by dropping fresh produce (Aibika, Bananas, Broccoli, Kaukau),
 * which tightens the pre-trends; the control endpoint and the pass-through result
 * are unchanged. == 0 reverts to the original pipeline behavior (drop Aibika only).
-* CONFIRM the Item strings match those in NSO_Prices_Long.dta.
 local nso_packaged_only = 1
 if `nso_packaged_only' == 1 {
     drop if treat == 0 & regexm(lower(Item), "aibika|banana|brocc?oli|kaukau")

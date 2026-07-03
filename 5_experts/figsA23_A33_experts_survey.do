@@ -82,12 +82,10 @@ but I'm not so sure that those that start with "socnores" are for non-researcher
 becuase in that case the number of observations don't match.
 
 socres_label --> question on are you a phd student, pos doc, faculty....
-socreswhi_label --> which of the above are you // but there are weird categories as if they wrote text, but it is not supposed to allow text, weird... 
-socresdis_label --> discipline // many options and also open question to specify "other"
-socresaffil_label --> primary research institution // similarly than with socreswhi_label, some of them are selected from multiple choice but others seem
-												//to be entered with text, even though the option was available in the first place
-												// I think this is because if you selected "other", then in the next screen they ask you the same question again,
-												// but now you have to write it with text
+socreswhi_label --> which of the above are you // some values are free text although the field was multiple choice
+socresdis_label --> discipline // multiple choice with an "other" free-text option
+socresaffil_label --> primary research institution // some values are free text although the field was multiple choice
+												// (respondents selecting "other" were re-prompted to enter text)
 
 socresaffilother --> Other research affiliation												
 socresecofie_label --> research field

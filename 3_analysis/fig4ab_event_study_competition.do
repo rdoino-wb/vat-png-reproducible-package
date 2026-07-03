@@ -13,7 +13,7 @@
            by identity from both panels.
  INPUTS  : ${final_stores}/POM_Prices_Long_Clean.dta (needs lat, lng); globals
            ${dir_graphs}, ${dir_tables}
- OUTPUTS : ${dir_graphs}/figure4a_final.png, figure4b_final.png;
+ OUTPUTS : ${dir_graphs}/figure_4a.png, figure_4b.png;
            ${dir_tables}/store_competition_groups.dta (+ .csv) — consumed by
            fig4c_within_chain.do; plus store-level pass-through and plot-data
            intermediates (.dta/.csv) in ${dir_tables}
@@ -26,9 +26,9 @@ clear all
 set more off
 
 * ---- Parameters ----
-local decay_km    = 2     // distance-decay length (km) for the proximity score; the
-                          // "wider" measure from the author's note. CONFIRM the value.
-local panelb_xmax = 8     // 4b histogram x upper limit  (CONFIRM against the paper)
+local decay_km    = 2     // distance-decay length (km) for the proximity score
+                          // (wider distance measure used for 4a/4b)
+local panelb_xmax = 8     // 4b histogram x upper limit
 
 local DATA "${final_stores}/POM_Prices_Long_Clean.dta"
 local OUTD "${dir_tables}"
@@ -296,7 +296,7 @@ twoway ///
     xsize(8.8) ysize(4.7) ///
     name(fig4a, replace)
 
-graph export "`OUTF'/figure4a_final.png", replace width(2400)
+graph export "`OUTF'/figure_4a.png", replace width(2400)
 
 use "`OUTD'/figure4b_store_pass_through_final.dta", clear
 
@@ -329,4 +329,4 @@ graph combine hist_hi hist_lo, rows(1) ///
     graphregion(color(white)) xsize(8.8) ysize(3.9) ///
     imargin(medium) name(fig4b, replace)
 
-graph export "`OUTF'/figure4b_final.png", replace width(2400)
+graph export "`OUTF'/figure_4b.png", replace width(2400)

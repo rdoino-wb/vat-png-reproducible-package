@@ -25,7 +25,7 @@ set more off
 import delimited "${raw_census}/png_admpop_adm2_2011_v2.csv", encoding("UTF-8") clear 
 
 /* source
-https://data.humdata.org/dataset/cod-ps-png?utm_source=chatgpt.com */
+https://data.humdata.org/dataset/cod-ps-png */
 
 * Rename variables
 rename adm2_en district

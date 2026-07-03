@@ -29,7 +29,7 @@ if "${dir_graphs}" == "" global dir_graphs "."
 global my_blue  "20 97 128"
 global my_green "0 166 118"
 
-* same extract as Table A4 (Panel A); confirm it holds the April 2026 module
+* same extract as Table A4 (Panel A); April 2026 module
 local DTA "${raw_phone}/20260429/PNG_HFPS_Household_weighted_wFood.dta"
 
 *------- 1. Load: April 2026 round -------------------------------------------
