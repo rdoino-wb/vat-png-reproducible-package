@@ -1,0 +1,376 @@
+#===============================================================================
+# fig2_household_map.R
+# VAT exemption pass-through and incidence (Papua New Guinea)
+#
+# PURPOSE : Produce Figure 2, the phone-survey household/respondent map (unique
+#           households per district), and export district-level counts/shares.
+# INPUTS  : Final/phone_survey/map.csv; raw phone_survey/temp/gadm41_PNG_2.shp
+# OUTPUTS : figure_2.png (dir_figures);
+#           Final/phone_survey/png_survey_by_district.dta,
+#           Final/phone_survey/png_survey_by_district_month.dta,
+#           Final/phone_survey/png_survey_by_district_monthly_avg.dta (Table A2 inputs)
+# DEPENDS : run after main.do data prep (phone survey data prepared upstream)
+# CALLED BY: main.R
+#===============================================================================
+
+# Load dataset
+survey <- readr::read_csv(file.path(dir_data_final, "phone_survey/map.csv"))
+
+# load district-level shapefile
+districts <- st_read(file.path(
+  dir_data_raw,
+  "phone_survey/temp/gadm41_PNG_2.shp"
+))
+
+
+#------------------------------------------------------------------------------#
+# Fix names to join my survey data with shapefile data
+#------------------------------------------------------------------------------#
+
+## Normalize some features to join
+norm <- function(x) {
+  x |>
+    stringi::stri_trans_general("Latin-ASCII") |>
+    toupper() |>
+    trimws()
+}
+
+survey <- survey |>
+  mutate(
+    # Step 1: remove the word "DISTRICT" if present
+    district_clean = gsub(
+      "\\s*DISTRICT\\s*$",
+      "",
+      district,
+      ignore.case = TRUE
+    ),
+
+    # Step 2: replace "/" with "-"
+    district_clean = gsub("/", "-", district_clean),
+
+    # Step 3: normalize accents, case, and whitespace
+    district_norm = norm(district_clean)
+  )
+
+districts <- districts |> mutate(district_norm = norm(NAME_2)) # <- change district name column in shapefile data
+
+## Check anti join
+anti_join(
+  survey |> distinct(district_norm),
+  districts |> distinct(district_norm),
+  by = "district_norm"
+) |>
+  print(n = Inf) # some of them don't match because of different naming and typos
+
+
+## Adjust names of districts that are not matching
+fix_crosswalk <- tibble::tribble(
+  ~survey_name,
+  ~shape_name,
+  "HIRI-KOIARI",
+  "KAIRUKU-HIRI",
+  "KAIRUKU",
+  "KAIRUKU-HIRI",
+  "POPONDETTA",
+  "IJIVITARI",
+  "KOMPIAM",
+  "KOMPIAM-AMBUM",
+  "MT HAGEN",
+  "MOUNT HAGEN",
+  "TAWAE-SIASSI",
+  "TEWAE-SIASSI",
+  "AMBUNTI-DREKIKIER",
+  "AMBUNTI-DREIKIKIR",
+  "UNGGAI-BENNA",
+  "UNGGAI-BENA",
+  "MAGARIMA",
+  "KOMO-MAGARIMA",
+  "PORGERA-PAIELA",
+  "LAGAIP-PORGERA",
+  "LAGAIP",
+  "LAGAIP-PORGERA",
+  "SINA SINA YONGGOMUGL",
+  "SINA SINA-YONGGOMUGL",
+  "WOSERA GAWI",
+  "WOSERA-GAWI",
+  "KAINANATU",
+  "KAINANTU",
+  "YANGORU SAUSSIA",
+  "YANGORO-SAUSSIA",
+  "NAKANAI",
+  "TALASEA",
+  "USINO BUNDI",
+  "USINO-BUNDI",
+  "NATIONAL CAPITAL",
+  "NATIONAL CAPITAL DISTRICT",
+  "DELTA FLY",
+  "MIDDLE FLY",
+  "WAU-WARIA",
+  "BULOLO",
+  "FINSCHAFEN",
+  "FINSCHHAFEN"
+  # add more rows as needed
+)
+
+## Harmonize district names that are not matching
+survey <- survey |>
+  left_join(fix_crosswalk, by = c("district_norm" = "survey_name")) |>
+  mutate(
+    district_norm = ifelse(!is.na(shape_name), shape_name, district_norm)
+  ) |>
+  select(-shape_name)
+
+# Decide what to map
+# Unique households ever sampled
+hh_counts <- survey |>
+  distinct(hhid_full, district_norm) |>
+  count(district_norm, name = "hh_n")
+
+## Quick check of number of HHs
+overall_hh <- n_distinct(survey$hhid_full)
+sum_by_dist <- sum(hh_counts$hh_n)
+overall_hh
+sum_by_dist
+
+#------------------------------------------------------------------------------#
+# Join counts to geometry
+#------------------------------------------------------------------------------#
+
+map_df <- districts |>
+  left_join(hh_counts, by = "district_norm") |>
+  mutate(
+    # pick the column you created above:
+    value = dplyr::coalesce(hh_n, 0L) # or coalesce(interviews_n, 0L) / coalesce(hh_avg, 0)
+  )
+
+## Quick check
+nrow(map_df) == nrow(districts) # should be true
+sum(is.na(map_df$hh_n)) # districts with no sampled HHs (before coalesce)
+map_df |> dplyr::filter(is.na(hh_n)) # which districts have no sampled HHs (before coalesce)?
+map_df |> dplyr::filter(value == 0) # which districts have zero sample?
+
+## Sanity check
+dplyr::anti_join(
+  survey |> distinct(district_norm),
+  districts |> distinct(district_norm),
+  by = "district_norm"
+) |>
+  print(n = Inf) # all districts should have matched
+
+
+#------------------------------------------------------------------------------#
+# Plot map with labels (Figure 2)
+#------------------------------------------------------------------------------#
+
+# City points derived from polygons (no hard-coding): pull the relevant
+# polygons and place a point on their surface for labeling. Project to meters
+# (UTM 55S) to compute interior points robustly, then back to the plot CRS.
+dist_proj <- st_transform(districts, 32755)
+
+city_from_poly <- dist_proj %>%
+  dplyr::filter(
+    district_norm %in%
+      c("NATIONAL CAPITAL DISTRICT", "LAE", "MOUNT HAGEN", "MADANG")
+  ) %>%
+  dplyr::mutate(
+    city = dplyr::case_when(
+      district_norm == "NATIONAL CAPITAL DISTRICT" ~ "Port Moresby",
+      district_norm == "LAE" ~ "Lae",
+      district_norm == "MOUNT HAGEN" ~ "Mount Hagen",
+      district_norm == "MADANG" ~ "Madang",
+      TRUE ~ district_norm
+    )
+  ) %>%
+  sf::st_point_on_surface() %>%
+  sf::st_transform(sf::st_crs(districts))
+
+label_pos <- tibble::tribble(
+  ~city,
+  ~lon,
+  ~lat,
+  "Port Moresby",
+  147.0,
+  -10.3, # SE over Coral Sea / Gulf of Papua
+  "Lae",
+  148.0,
+  -7.3, # E over Huon Gulf
+  "Madang",
+  147.0,
+  -4.95, # N over Bismarck Sea
+  "Mount Hagen",
+  144.40,
+  -7.30 # S over Coral Sea (move as you like)
+) %>%
+  sf::st_as_sf(coords = c("lon", "lat"), crs = 4326) %>%
+  sf::st_transform(sf::st_crs(districts))
+
+# Extract coordinates in plot CRS
+city_xy <- st_transform(city_from_poly, st_crs(districts)) %>%
+  cbind(st_coordinates(.)) %>%
+  dplyr::rename(x = X, y = Y) %>%
+  st_drop_geometry()
+
+label_xy <- cbind(label_pos, st_coordinates(label_pos)) %>%
+  dplyr::rename(lx = X, ly = Y) %>%
+  st_drop_geometry()
+
+callouts <- dplyr::left_join(
+  city_xy,
+  label_xy %>% dplyr::select(city, lx, ly),
+  by = "city"
+)
+
+# Frequency map
+p <- ggplot(map_df) +
+  geom_sf(aes(fill = value), linewidth = 0.15, color = "white") +
+  # leader lines (city -> offshore label)
+  geom_curve(
+    data = callouts,
+    aes(x = x, y = y, xend = lx, yend = ly),
+    curvature = 0.15,
+    linewidth = 0.3
+  ) +
+  # labels at your offshore positions
+  geom_text(
+    data = callouts,
+    aes(x = lx, y = ly, label = city),
+    size = 3.5
+  ) +
+  scale_fill_distiller(
+    palette = "Reds",
+    direction = 1,
+    trans = "sqrt",
+    na.value = "#f0f0f0",
+    breaks = scales::pretty_breaks(5),
+    name = "Households"
+  ) +
+  labs(
+    title = "Papua New Guinea — Phone Survey Households by District",
+    subtitle = "Unique households per district",
+    caption = "Source: phone survey & administrative boundaries"
+  ) +
+  theme_minimal() +
+  theme(
+    panel.grid.major = element_blank(),
+    plot.title = element_text(face = "bold"),
+    legend.position = "right",
+    axis.title = element_blank(),
+  )
+
+# Save graph (Figure 2)
+ggsave(
+  file.path(dir_figures, "figure_2.png"),
+  p,
+  width = 9,
+  height = 7,
+  dpi = 300
+)
+
+#------------------------------------------------------------------------------#
+# Export dataset with district names and percent of HHs to use later in table  #
+# (Table A2). The percent share is computed here only for this export.         #
+#------------------------------------------------------------------------------#
+
+hh_counts_pct <- hh_counts %>%
+  mutate(pct = hh_n / sum(hh_n)) # 0-1 share
+
+map_df_pct <- districts %>%
+  left_join(hh_counts_pct, by = "district_norm") %>%
+  mutate(pct = dplyr::coalesce(pct, 0))
+
+# 1) Keep only the needed vars, remove geometry, and tidy
+out <- map_df_pct %>%
+  st_drop_geometry() %>%
+  transmute(
+    district_norm,
+    NAME_1,
+    hh_n = dplyr::coalesce(hh_n, 0L),
+    pct = dplyr::coalesce(pct, 0)
+  ) %>%
+  rename(hh_pct = pct) %>%
+  distinct() %>% # just in case there are duplicate rows
+  arrange(district_norm)
+
+# 2) write a native Stata file
+write_dta(
+  out,
+  file.path(dir_data_final, "phone_survey/png_survey_by_district.dta"),
+  version = 14
+)
+
+#------------------------------------------------------------------------------#
+# Table A2 also needs two further district files, keyed on district_norm:       #
+#   png_survey_by_district_month.dta        share of baseline-month households  #
+#   png_survey_by_district_monthly_avg.dta  share from the monthly-average count#
+# Both reuse the same normalization and crosswalk as above, and are joined onto #
+# the full shapefile district list so the 1:1 merges in Table A2 line up with   #
+# png_survey_by_district.dta.                                                    #
+#------------------------------------------------------------------------------#
+
+# District keys from the shapefile (same set as the file written above)
+district_keys <- districts |>
+  sf::st_drop_geometry() |>
+  dplyr::distinct(district_norm)
+
+# Reuse the exact district normalization + crosswalk applied to the survey above
+harmonize_district <- function(df) {
+  df |>
+    dplyr::mutate(
+      district_clean = gsub("\\s*DISTRICT\\s*$", "", district, ignore.case = TRUE),
+      district_clean = gsub("/", "-", district_clean),
+      district_norm  = norm(district_clean)
+    ) |>
+    dplyr::left_join(fix_crosswalk, by = c("district_norm" = "survey_name")) |>
+    dplyr::mutate(
+      district_norm = ifelse(!is.na(shape_name), shape_name, district_norm)
+    ) |>
+    dplyr::select(-shape_name)
+}
+
+# (a) Baseline-month households (map_month.csv: one row per household)
+month_raw <- readr::read_csv(
+  file.path(dir_data_final, "phone_survey/map_month.csv")
+)
+month_counts <- harmonize_district(month_raw) |>
+  dplyr::distinct(hhid_full, district_norm) |>
+  dplyr::count(district_norm, name = "hh_month_n") |>
+  dplyr::mutate(hh_month_pct = hh_month_n / sum(hh_month_n))
+
+out_month <- district_keys |>
+  dplyr::left_join(month_counts, by = "district_norm") |>
+  dplyr::transmute(
+    district_norm,
+    hh_month_pct = dplyr::coalesce(hh_month_pct, 0)
+  ) |>
+  dplyr::distinct() |>
+  dplyr::arrange(district_norm)
+
+write_dta(
+  out_month,
+  file.path(dir_data_final, "phone_survey/png_survey_by_district_month.dta"),
+  version = 14
+)
+
+# (b) Monthly-average count (map_monthly_avg.csv: one row per district, hh_n = mean)
+avg_raw <- readr::read_csv(
+  file.path(dir_data_final, "phone_survey/map_monthly_avg.csv")
+)
+avg_counts <- harmonize_district(avg_raw) |>
+  dplyr::group_by(district_norm) |>
+  dplyr::summarise(hh_avg_n = sum(hh_n, na.rm = TRUE), .groups = "drop") |>
+  dplyr::mutate(hh_monthly_avg_pct = hh_avg_n / sum(hh_avg_n))
+
+out_avg <- district_keys |>
+  dplyr::left_join(avg_counts, by = "district_norm") |>
+  dplyr::transmute(
+    district_norm,
+    hh_monthly_avg_pct = dplyr::coalesce(hh_monthly_avg_pct, 0)
+  ) |>
+  dplyr::distinct() |>
+  dplyr::arrange(district_norm)
+
+write_dta(
+  out_avg,
+  file.path(dir_data_final, "phone_survey/png_survey_by_district_monthly_avg.dta"),
+  version = 14
+)
