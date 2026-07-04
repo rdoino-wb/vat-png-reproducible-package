@@ -88,6 +88,10 @@ drop if treat == .
 gen stata_month = tm(2023m7) + month_year - 1
 format stata_month %tm
 
+* Guard: drop out-of-range month codes so a stray value cannot stretch the
+* x-axis (valid waves run through month_year 36 = Jun 2026; see 02_build_phone_panel.do)
+drop if month_year < 1 | month_year > 36
+
 * Calculate N values
 quietly sum n_w`win_level' if treat == 1
 local n_treat = string(r(mean), "%9.0fc")
@@ -197,6 +201,10 @@ collapse (mean) r_mean_price_w`win_level' n_w`win_level' `weights', by(month_yea
 * Date
 gen stata_month = tm(2023m7) + month_year - 1
 format stata_month %tm
+
+* Guard: drop out-of-range month codes so a stray value cannot stretch the
+* x-axis (valid waves run through month_year 36 = Jun 2026; see 02_build_phone_panel.do)
+drop if month_year < 1 | month_year > 36
 
 * Avg N labels
 quietly sum n_w`win_level' if formal_store==1

@@ -75,9 +75,13 @@ gegen total_hh = total(households)
 gen hh_pct_census = (households / total_hh) * 100
 drop total_hh
 
-	// There are 87 districts in 2011 census 
+	// There are 87 districts in 2011 census
 
-* Save dataset 
+* Canonical census province label, kept under a distinct name so it survives the
+* district-level merge below without colliding with the survey province variable.
+rename province_norm province_c
+
+* Save dataset
 *-------------------------------------------------------------------------------
 save "${final_census}/census_households_by_district.dta" , replace
 
@@ -130,15 +134,27 @@ replace district_norm = "YANGORU SAUSSIA" if district_norm == "YANGORO-SAUSSIA"
 replace province_norm = "NORTHERN (ORO)" if province_norm == "ORO"
 replace province_norm = "WEST SEPIK (SANDAUN)" if province_norm == "SANDAUN"
 
-* Merge with census data at the district level
-merge 1:1 district_norm province_norm using "${final_census}/census_households_by_district.dta" , gen(mer_census)
+* Merge with census at the DISTRICT level only. District names are harmonized
+* above and are unique (87 census districts); province names are NOT consistent
+* across the two sources (e.g. "CHIMBU" vs "CHIMBU (SIMBU)", plus whitespace and
+* encoding variants), so adding province to the key split provinces into duplicate
+* survey-only and census-only rows. Taking the province label from a single source
+* (the census) gives one clean row per province.
+merge 1:1 district_norm using "${final_census}/census_households_by_district.dta" , gen(mer_census)
 drop mer_census
 
-* Keep only district names and relevant variables for table 
-keep province_norm district_norm hh_pct hh_month_pct hh_monthly_avg_pct hh_pct_census
+* Canonical province = census province; fall back to the survey province for any
+* survey district not matched to the census.
+replace province_c = province_norm if province_c == ""
 
-* Prepare data for table at the province level 
-collapse (sum) hh_pct hh_month_pct hh_monthly_avg_pct hh_pct_census , by(province_norm)
+* Keep only district names and relevant variables for table
+keep province_c district_norm hh_pct hh_month_pct hh_monthly_avg_pct hh_pct_census
+
+* Prepare data for table at the province level
+collapse (sum) hh_pct hh_month_pct hh_monthly_avg_pct hh_pct_census , by(province_c)
+
+* Restore the province variable name expected by the table code below
+rename province_c province_norm
 
 * Table 
 *-------------------------------------------------------------------------------

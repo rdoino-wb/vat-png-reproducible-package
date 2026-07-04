@@ -537,10 +537,21 @@ if "${dir_tables}" == "" global dir_tables "."
 use "$final_experts/experts_survey_processed.dta", clear
 
 foreach v in researcher discipline_economics pf_exp incidence_exp ///
-             development_exp io_exp experience_geo {
+             development_exp io_exp {
     quietly summarize `v'
     scalar p_`v' = 100 * r(mean)
 }
+
+* experience_geo stores the labeled Qualtrics choice code, not a 0/1 dummy, so
+* its raw mean is not a share (that produced the 2538.10 value). Build the
+* LMIC-experience indicator from the "Yes"/"No" string label, matching the
+* has_country_exp construction in figsA34_A35_experts_hte.do.
+tempvar geo_yes
+gen `geo_yes' = .
+replace `geo_yes' = 1 if experience_geo_label == "Yes"
+replace `geo_yes' = 0 if experience_geo_label == "No"
+quietly summarize `geo_yes'
+scalar p_experience_geo = 100 * r(mean)
 
 * median completion time in minutes (guarded: column name may differ)
 scalar med_dur = .
