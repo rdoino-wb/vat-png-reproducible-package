@@ -63,6 +63,17 @@ global final_rpi      "${dir_data}/Final/rpi"
 global final_nso      "${dir_data}/Final/nso"
 global final_sentiment "${dir_data}/Final/sentiment"
 
+* Create Final data subdirectories if missing (cleaning scripts save here)
+cap mkdir "${dir_data}/Final"
+cap mkdir "${final_census}"
+cap mkdir "${final_experts}"
+cap mkdir "${final_phone}"
+cap mkdir "${final_stores}"
+cap mkdir "${final_e_stores}"
+cap mkdir "${final_rpi}"
+cap mkdir "${final_nso}"
+cap mkdir "${final_sentiment}"
+
 * Create output directories if missing
 cap mkdir "${dir_graphs}"
 cap mkdir "${dir_tables}"

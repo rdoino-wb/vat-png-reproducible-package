@@ -108,11 +108,10 @@ gen quintile_high = quintile_a + 0.15
 
 twoway rbar exp_prop_formal base quintile_a, barwidth(0.3) fcolor("$my_blue*0.8") lcolor("$my_blue*1.2") ///
 	|| rbar max exp_prop_formal quintile_a, barwidth(0.3) fcolor("$my_red*0.8") lcolor("$my_red*1.2") ///
-	|| scatter own_prod quintile_a, connect(l) mlcolor("$my_green") mfcolor("$my_green") msize(medlarge) lcolor("$my_green") lwidth(medthick) ///
-	title("Type of consumption/expenditure by quintile", size(medsmall)) xtitle("") ytitle("") ///
+	|| scatter own_prod quintile_a, connect(l) msize(large) mfcolor("$my_green") mlcolor(white) mlwidth(thin) lcolor("$my_green") lwidth(thick) ///	title("Type of consumption/expenditure by quintile", size(medsmall)) xtitle("") ytitle("") ///
 	ylab(0 "0%" 20 "20%" 40 "40%" 60 "60%" 80 "80%" 100 "100%", nogrid) ///
 	xlab(, valuelabel nogrid) ///
-	legend(pos(6) rows(1) region(lcolor(none)) order(1 "Formal expenditure" 2 "Informal expenditure" 3 "Own production")) ///
+	legend(pos(6) rows(1) size(small) region(lcolor(none)) order(1 "Formal expenditure" 2 "Informal expenditure" 3 "Own production")) ///
 	${wbg}
 graph export "$dir_graphs/figure_a7.png" , replace width(2400)
 
@@ -160,7 +159,7 @@ lab val product product_lab
 graph bar prop_*  , over(product, label(valuelabel labsize(small) angle(45))) stack ///
 	title("Food purchased by item and quintile (in quantity)", size(medsmall)) ///
 	ylab(0 "0%" 20 "20%" 40 "40%" 60 "60%" 80 "80%" 100 "100%", nogrid) ///
-	legend(pos(6) rows(1) region(lcolor(none)) ///
+	legend(pos(6) rows(1) size(small) region(lcolor(none)) ///
 	order(1 "Quintile 1" 2 "Quintile 2" 3 "Quintile 3" 4 "Quintile 4" 5 "Quintile 5")) ///
 	${qbars} ${wbg}
 
@@ -187,6 +186,13 @@ drop total_quantity quantity_w5
 rename percent percent_
 reshape wide percent_ , i(product) j(formal_store)
 
+capture destring product , replace
+lab def product_lab 101 "sugar" 102 "kaukau" 103 "bananas" 104 "cooking oil" 105 "rice" 107 "tinned fish" ///
+					108 "tea" 110 "flour" 111 "aibika" 114 "tinned beef" 115 "sausages" 116 "chicken" 124 "petrol" ///
+					125 "phone credit" 126 "tinned baked beans" 127 "powdered milk" 128 "breakfast cereal" 129 "butter" ///
+					130 "milo" 131 "noodles" 132 "biscuits" 133 "coffee" 134 "broccoli" 135 "salt", replace
+lab val product product_lab
+
 * Locals for title
 local globalname = "item_`q'" 
 local goodlabel = "$`globalname'"
@@ -194,9 +200,9 @@ local globalname = "food_`q'"
 local foodlabel = "$`globalname'"	
 
 * Graph
-graph bar percent_1 percent_0, over(product, label(labsize(small) angle(45)) ) stack ///
+graph bar percent_1 percent_0, over(product, label(valuelabel labsize(small) angle(45)) ) stack ///
 	  title("Summary of quantity purchased in formal/informal stores", size(medsmall)) ///
-	  legend(order(1 "Formal" 2 "Informal") pos(6) rows(1) region(lcolor(none))) ///
+	  legend(order(1 "Formal" 2 "Informal") pos(6) rows(1) size(small) region(lcolor(none))) ///
 	  ylab(0 "0%" 20 "20%" 40 "40%" 60 "60%" 80 "80%" 100 "100%", nogrid) ///
 	  bar(1, fcolor("$my_blue%80") lcolor("$my_blue*1.2") lwidth(medthick)) ///
 	  bar(2, fcolor("$my_red%80") lcolor("$my_red*1.2") lwidth(medthick)) ///

@@ -28,10 +28,10 @@
 
 {
   cat("\n=== PART 1: GPS EXTRACTION ===\n")
-
+  
   # Set file path
   file_path <- file.path(dir_data_raw_store, "POM PRICE COLLECTION.xlsx")
-
+  
   # Check file exists
   if (!file.exists(file_path)) {
     stop(
@@ -40,7 +40,7 @@
       "\nPlease ensure 'POM PRICE COLLECTION.xlsx' is in data/raw/store_collection/"
     )
   }
-
+  
   # Load GPS coordinates from gps_coordinates sheet
   gps_data <- read_excel(
     file_path,
@@ -49,7 +49,7 @@
     col_names = TRUE,
     .name_repair = "minimal"
   )
-
+  
   # Clean GPS data
   supermarket_locations <- gps_data %>%
     filter(!is.na(lat) & !is.na(lng)) %>%
@@ -60,7 +60,7 @@
     ) %>%
     select(Name, Suburb, lat, lng) %>%
     rename(Supermarket = Name)
-
+  
   cat(
     "Found",
     nrow(supermarket_locations),
@@ -72,15 +72,15 @@
 
 {
   cat("\n=== PART 2: PROXIMITY ANALYSIS ===\n")
-
+  
   # Analysis parameters
   speed_kmh <- 20 # average city driving speed
   t_half_min <- 5 # half-life in minutes
   T_max_min <- 25 # max travel time considered
-
+  
   v_mpm <- (speed_kmh * 1000) / 60
   rho <- log(2) / t_half_min
-
+  
   cat(
     "Parameters: speed =",
     speed_kmh,
@@ -88,33 +88,33 @@
     t_half_min,
     "min\n"
   )
-
+  
   # Convert to data.table
   DT <- as.data.table(supermarket_locations)
   stores <- DT[!is.na(lat) & !is.na(lng)]
   stores[, id := .I]
   setcolorder(stores, c("id", "Supermarket", "Suburb", "lng", "lat"))
-
+  
   cat("Analyzing", nrow(stores), "supermarkets\n")
-
+  
   if (nrow(stores) >= 2) {
     # Calculate pairwise distances
     coords <- as.matrix(stores[, .(lng, lat)])
     coords <- apply(coords, 2, as.numeric)
-
+    
     d_m <- geosphere::distm(coords, fun = geosphere::distHaversine)
     tau_min <- d_m / v_mpm
     diag(tau_min) <- NA_real_
-
+    
     # Apply distance cap
     tau_min_cap <- tau_min
     tau_min_cap[tau_min_cap > T_max_min] <- NA_real_
-
+    
     # Calculate intensity
     W <- exp(-rho * tau_min_cap)
     W[is.na(W)] <- 0
     intensity <- rowSums(W, na.rm = TRUE)
-
+    
     # Tertile classification
     qs <- quantile(intensity, probs = c(1 / 3, 2 / 3), na.rm = TRUE)
     class_tertile <- fifelse(
@@ -122,7 +122,10 @@
       "Low",
       fifelse(intensity <= qs[2], "Medium", "High")
     )
-
+    
+    med_intensity <- median(intensity, na.rm = TRUE)
+    class_binary <- fifelse(intensity > med_intensity, "Above Median", "Below Median")
+    
     # Create results
     supermarket_data <- stores[, .(
       id,
@@ -135,15 +138,20 @@
       proximity_tertile = factor(
         class_tertile,
         levels = c("Low", "Medium", "High")
+      ),
+      proximity_binary = factor(
+        class_binary,
+        levels = c("Below Median", "Above Median")
       )
     )]
-
+    
     cat("\nTertile Classification:\n")
     print(table(supermarket_data$proximity_tertile))
   } else {
     supermarket_data <- stores
     supermarket_data$intensity <- NA
     supermarket_data$proximity_tertile <- NA
+    supermarket_data$proximity_binary <- NA
   }
 }
 
@@ -151,7 +159,7 @@
 
 {
   cat("\n=== PART 3: CREATING TERTILE MAP ===\n")
-
+  
   if (
     exists("supermarket_data") &&
     nrow(supermarket_data) > 0 &&
@@ -160,15 +168,15 @@
     # Calculate map bounds
     coords_matrix <- as.matrix(supermarket_data[, .(lon, lat)])
     coords_matrix <- apply(coords_matrix, 2, as.numeric)
-
+    
     lat_min <- min(coords_matrix[, 2], na.rm = TRUE)
     lat_max <- max(coords_matrix[, 2], na.rm = TRUE)
     lng_min <- min(coords_matrix[, 1], na.rm = TRUE)
     lng_max <- max(coords_matrix[, 1], na.rm = TRUE)
-
+    
     lat_pad <- (lat_max - lat_min) * 0.08
     lng_pad <- (lng_max - lng_min) * 0.08
-
+    
     # Basemap via raster tiles fetched with maptiles, drawn with tidyterra.
     # maptiles uses CARTO / OSM tile servers and takes an explicit bounding box.
     # Tiles cache to disk, so reruns and replication do not re-download.
@@ -178,12 +186,12 @@
     }
     tile_cache <- file.path(dir_data_raw_store, "tile_cache")
     dir.create(tile_cache, showWarnings = FALSE, recursive = TRUE)
-
+    
     bb_sf <- sf::st_as_sfc(sf::st_bbox(c(
       xmin = lng_min - lng_pad, ymin = lat_min - lat_pad,
       xmax = lng_max + lng_pad, ymax = lat_max + lat_pad
     ), crs = 4326))
-
+    
     basetile <- tryCatch(
       maptiles::get_tiles(
         bb_sf,
@@ -197,7 +205,7 @@
         NULL
       }
     )
-
+    
     # base layer added to the map below. If tiles are unavailable, base_tiles is
     # NULL and ggplot ignores it (points render on a blank background).
     if (is.null(basetile)) {
@@ -205,7 +213,7 @@
     } else {
       base_tiles <- tidyterra::geom_spatraster_rgb(data = basetile, maxcell = 5e6)
     }
-
+    
     # OSM vector layers disabled: empty objects so the "if (!is.null(...))" guard
     # blocks in the map skip cleanly. The tile basemap replaces them.
     empty_osm     <- osmdata::osmdata()
@@ -217,17 +225,17 @@
     parks         <- empty_osm
     coast         <- empty_osm
     coastline     <- NULL
-
+    
     # Tertile classification map (Figure 1)
     if (!all(is.na(supermarket_data$proximity_tertile))) {
       cat("Creating tertile proximity map...\n")
-
+      
       results_sf_tertile <- st_as_sf(
         supermarket_data[!is.na(proximity_tertile)],
         coords = c("lon", "lat"),
         crs = 4326
       )
-
+      
       tertile_map <- ggplot() +
         base_tiles +
         # Green areas
@@ -328,7 +336,7 @@
           legend.text = element_text(size = 10),
           plot.margin = margin(15, 15, 35, 15)
         )
-
+      
       ggsave(
         file.path(dir_figures, "figure_1.png"),
         plot = tertile_map,
@@ -346,20 +354,20 @@
 
 {
   cat("\n=== PART 4: MERGING TERTILE CLASSIFICATION TO PRICE DATASET ===\n")
-
+  
   if (exists("supermarket_data") && nrow(supermarket_data) > 0) {
     # Load the price dataset
     price_file <- file.path(dir_data_final_store, "POM_Prices_Long_Clean.csv")
-
+    
     if (file.exists(price_file)) {
       cat("Loading price dataset...\n")
       price_data <- fread(price_file)
-
+      
       # Create classification lookup
       classification <- supermarket_data %>%
-        select(Name, proximity_tertile) %>%
+        select(Name, proximity_tertile, proximity_binary) %>%
         rename(Supermarket = Name)
-
+      
       # Merge classification into price data
       cat("Merging tertile classification...\n")
       price_data_updated <- price_data %>%
@@ -372,14 +380,14 @@
           ))
         ) %>%
         left_join(classification, by = "Supermarket")
-
+      
       # Save updated CSV with character values
       fwrite(
         price_data_updated,
         file.path(dir_data_final_store, "POM_Prices_Long_Clean.csv")
       )
       cat("Updated .csv file saved\n")
-
+      
       # Also save as .dta if haven package is available
       if (require("haven", quietly = TRUE)) {
         # Create numeric version for Stata
@@ -392,15 +400,16 @@
               TRUE ~ NA_real_
             )
           ) %>%
+          mutate(proximity_binary = as.character(proximity_binary)) %>%
           select(-proximity_tertile) %>%
           rename(proximity_tertile = proximity_tertile_num)
-
+        
         # Add value labels for Stata
         price_data_dta$proximity_tertile <- haven::labelled(
           price_data_dta$proximity_tertile,
           labels = c("Low" = 1, "Medium" = 2, "High" = 3)
         )
-
+        
         write_dta(
           price_data_dta,
           file.path(dir_data_final_store, "POM_Prices_Long_Clean.dta")
@@ -409,7 +418,7 @@
       } else {
         cat("Warning: haven package not available - .dta file not created\n")
       }
-
+      
       cat("\n=== Tertile Classification Summary ===\n")
       cat(
         "Total observations with classification:",
@@ -417,7 +426,7 @@
         "\n"
       )
       print(table(price_data_updated$proximity_tertile, useNA = "ifany"))
-
+      
       cat("\nSupermarkets by tertile classification:\n")
       tertile_summary <- price_data_updated %>%
         distinct(Supermarket, proximity_tertile) %>%
