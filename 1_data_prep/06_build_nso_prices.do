@@ -52,11 +52,17 @@ foreach sheet of local sheets {
     }
     rename A Category
     rename B Item
-    * first product row = first row with a non-missing Item (skips the date header)
+	
+    * keep the contiguous price block: first product row to the first blank row
     gen long _rn = _n
     quietly summarize _rn if !missing(Item)
-    quietly keep if _rn == r(min)
-    drop _rn
+    local firstprod = r(min)
+    gen byte _blank = missing(Category) & missing(Item)
+    quietly summarize _rn if _blank & _rn > `firstprod'
+    local cut = cond(r(N) > 0, r(min), _N + 1)
+    quietly keep if _rn >= `firstprod' & _rn < `cut'
+    drop _rn _blank
+	
     * destring price columns (everything except Category, Item)
     foreach v of varlist _all {
         if !inlist("`v'", "Category", "Item") destring `v', replace force
