@@ -90,27 +90,21 @@ tempfile store_est
 save `store_est'
 
 ********************************************************************************
-* Pooled high / pooled low within Stop and Shop (same estimator, by group)
+* Pooled high / pooled low: inverse-variance weighted mean of the store
+* coefficients (weights 1/se^2; SE = sqrt(1/sum w); point within the store range)
 ********************************************************************************
-use `analysis', clear
-keep if chain == "Stop and Shop"
-
-tempname PL
+use `store_est', clear
+gen double w = 1/(stderr^2)
+gen double wc = w*coef
+collapse (sum) wc (sum) w (count) n_stores=coef, by(high_prox)
+gen double coef = wc/w
+gen double se = sqrt(1/w)
+gen double ci_lower = coef - 1.96*se
+gen double ci_upper = coef + 1.96*se
+gen byte is_pooled = 1
+keep high_prox coef ci_lower ci_upper is_pooled
 tempfile pooled
-postfile `PL' byte high_prox double coef double ci_lower double ci_upper byte is_pooled ///
-    using `pooled', replace
-foreach g in 1 0 {
-    quietly count if high_prox == `g'
-    if r(N) > 0 {
-        cap reghdfe r_price treatedpost if high_prox == `g', absorb(sheet_index month_num) vce(cluster item_code)
-        if !_rc {
-            local b  = _b[treatedpost]
-            local se = _se[treatedpost]
-            post `PL' (`g') (`b') (`b'-1.96*`se') (`b'+1.96*`se') (1)
-        }
-    }
-}
-postclose `PL'
+save `pooled'
 
 ********************************************************************************
 * Assemble and plot
@@ -126,10 +120,10 @@ gen long store_num = .
 append using `sd'
 
 gen double y = store_num
-replace y = -0.45 if is_pooled == 1 & high_prox == 1
-replace y = -0.95 if is_pooled == 1 & high_prox == 0
+replace y = -0.45 if is_pooled==1 & high_prox==1
+replace y = -0.95 if is_pooled==1 & high_prox==0
 
-* y-axis labels: suburb (else store name); "Pooled" for the pooled row
+* y-axis labels: suburb for stores, single "Pooled" tick
 gen str60 ylab_txt = strtrim(suburb) if is_pooled == 0
 replace ylab_txt = supermarket if is_pooled == 0 & (missing(ylab_txt) | ylab_txt == "")
 capture label drop ylbl
@@ -141,9 +135,9 @@ label values y ylbl
 quietly count if is_pooled == 0
 local ns = r(N)
 
-quietly summarize coef if is_pooled == 1 & high_prox == 1
+quietly summarize coef if is_pooled==1 & high_prox==1
 local ph = r(mean)
-quietly summarize coef if is_pooled == 1 & high_prox == 0
+quietly summarize coef if is_pooled==1 & high_prox==0
 local pl = r(mean)
 
 twoway ///
@@ -160,7 +154,8 @@ twoway ///
     xtitle("Price effect", size(small)) ytitle("") ///
     xscale(range(-0.32 0.14)) ///
     xlabel(-0.3 "-30%" -0.2 "-20%" -0.1 "-10%" 0 "0" 0.1 "10%", nogrid labsize(small)) ///
-    ylabel(1(1)`ns' -0.7 "Pooled", valuelabel nogrid angle(0) labsize(vsmall)) yscale(range(-1.4 `=`ns'+0.6')) ///
+    ylabel(1(1)`ns' -0.7 "Pooled", valuelabel nogrid angle(0) labsize(vsmall)) ///
+    yscale(range(-1.4 `=`ns'+0.6')) ///
     xline(`ph', lpattern(dash) lcolor("$my_blue*0.6") lwidth(thin)) ///
     xline(`pl', lpattern(dash) lcolor("$my_red*0.6") lwidth(thin)) ///
     yline(0.2, lpattern(dash) lcolor(gs10) lwidth(thin)) ///

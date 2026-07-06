@@ -106,14 +106,26 @@ gen max = 100
 gen quintile_low = quintile_a - 0.15
 gen quintile_high = quintile_a + 0.15
 
-twoway rbar exp_prop_formal base quintile_a, barwidth(0.3) fcolor("$my_blue*0.8") lcolor("$my_blue*1.2") ///
-	|| rbar max exp_prop_formal quintile_a, barwidth(0.3) fcolor("$my_red*0.8") lcolor("$my_red*1.2") ///
-	|| scatter own_prod quintile_a, connect(l) msize(large) mfcolor("$my_green") mlcolor(white) mlwidth(thin) lcolor("$my_green") lwidth(thick) ///	title("Type of consumption/expenditure by quintile", size(medsmall)) xtitle("") ytitle("") ///
-	ylab(0 "0%" 20 "20%" 40 "40%" 60 "60%" 80 "80%" 100 "100%", nogrid) ///
-	xlab(, valuelabel nogrid) ///
-	legend(pos(6) rows(1) size(small) region(lcolor(none)) order(1 "Formal expenditure" 2 "Informal expenditure" 3 "Own production")) ///
-	${wbg}
-graph export "$dir_graphs/figure_a7.png" , replace width(2400)
+twoway ///
+    rbar exp_prop_formal base quintile_a, ///
+        barwidth(0.3) fcolor("$my_blue*0.8") lcolor("$my_blue*1.2") ///
+    || rbar max exp_prop_formal quintile_a, ///
+        barwidth(0.3) fcolor("$my_red*0.8") lcolor("$my_red*1.2") ///
+    || scatter own_prod quintile_a, ///
+        connect(l) ///
+        msize(large) ///
+        mfcolor("$my_green") ///
+        mlcolor(white) ///
+        mlwidth(thin) ///
+        lcolor("$my_green") ///
+        lwidth(thick) ///
+    ylab(0 "0%" 20 "20%" 40 "40%" 60 "60%" 80 "80%" 100 "100%", nogrid) ///
+    xlab(, valuelabel nogrid) ///
+    legend(pos(6) rows(1) size(small) region(lcolor(none)) ///
+           order(1 "Formal expenditure" 2 "Informal expenditure" 3 "Own production")) ///
+    ${wbg}
+
+graph export "$dir_graphs/figure_a7.png", replace width(2400)
 
 	
 	
