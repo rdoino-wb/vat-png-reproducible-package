@@ -432,8 +432,8 @@ twoway histogram substantial , percent discrete horizontal width(0.5) gap(20) //
 	xlab(0 "0%" 20 "20%" 40 "40%" 60 "60%" 80 "80%" 100 "100%", nogrid) ///
 	ylab(1 `" "Relative" "elasticities" "' 2 `" "High voluntary" "compliance" "' 3 ///
 	`" "High pass-through" "from chain to indep." "supermarkets" "' ///
-	4 `" "High political" "pressure" "' 5 "High monitoring", nogrid) ///
-	graphregion(color(white)) plotregion(color(white))
+	4 `" "High political" "pressure" "' 5 "High monitoring", nogrid angle(00)) ///
+		graphregion(color(white)) plotregion(color(white))
 	
 	graph export "$dir_graphs/figure_a30.png", replace width(2400)
 	
@@ -454,7 +454,7 @@ twoway histogram small , percent discrete horizontal width(0.5) gap(20) ///
 	xlab(0 "0%" 20 "20%" 40 "40%" 60 "60%" 80 "80%" 100 "100%", nogrid) ///
 	ylab(1 `" "Relative" "elasticities" "' 2 `" "Low voluntary" "compliance" "' 3 ///
 	`" "Low pass-through" "from chain to indep." "supermarkets" "' ///
-	4 `" "Low political" "pressure" "' 5 "Low monitoring", nogrid) ///
+	4 `" "Low political" "pressure" "' 5 "Low monitoring", nogrid angle(0)) ///
 	graphregion(color(white)) plotregion(color(white))
 	
 	graph export "$dir_graphs/figure_a31.png", replace width(2400)
