@@ -95,7 +95,7 @@ use `all_data', clear
 display as text "  ✓ Reshaped to " _N " item-month observations"
 
 ********************************************************************************
-* 3. CREATE TREATMENT INDICATOR (KEEP ALL ITEMS)
+* 3. CREATE TREATMENT INDICATOR (EXPLICIT TREAT/CONTROL LISTS)
 ********************************************************************************
 
 display as text _newline "Step 3: Assigning treatment status..."
@@ -104,20 +104,45 @@ display as text _newline "Step 3: Assigning treatment status..."
 gen item_name_clean = subinstr(item_name, " ", "", .)
 replace item_name_clean = lower(trim(item_name_clean))
 
-* Initialize treatment = 0 (control) for ALL items
-gen treat = 0
+* Treatment and control classes follow the colleague's BPNG lists exactly
+* (reproduce_figure3.do): 10 exempt classes (treatment) and 7 non-exempt
+* comparison classes (control). Pasta is treatment. Every other RPI class
+* (soft drink, toiletries, jam, pork, lamb, stock cubes, sauces, repellent,
+* peanut butter, vegemite) is dropped, matching the colleague's keep if treat<.
+gen byte treat = .
 
-* Mark treatment items (VAT exempt) = 1
+* Treatment (VAT exempt): Biscuits, Flour, Rice, Pasta, Chicken, Tinned Meat,
+* Tinned Fish, Cooking Oil, Instant Coffee, Tea-Bags
 replace treat = 1 if regexm(item_name_clean, "biscuit")
 replace treat = 1 if regexm(item_name_clean, "flour")
 replace treat = 1 if regexm(item_name_clean, "rice")
-replace treat = 1 if regexm(item_name_clean, "cookingoil")
-replace treat = 1 if regexm(item_name_clean, "tinnedfish")
-replace treat = 1 if regexm(item_name_clean, "chicken")
-replace treat = 1 if regexm(item_name_clean, "instantcoffee")
-replace treat = 1 if regexm(item_name_clean, "tea")
-replace treat = 1 if regexm(item_name_clean, "tinnedmeat")
 replace treat = 1 if regexm(item_name_clean, "pasta")
+replace treat = 1 if regexm(item_name_clean, "chicken")
+replace treat = 1 if regexm(item_name_clean, "tinnedmeat")
+replace treat = 1 if regexm(item_name_clean, "tinnedfish")
+replace treat = 1 if regexm(item_name_clean, "cookingoil")
+replace treat = 1 if regexm(item_name_clean, "coffee")
+replace treat = 1 if regexm(item_name_clean, "tea")
+
+* Control (non-exempt comparison): Break Fast Cereal, Sausages, Powdered Milk,
+* Butter and Margarine, Sugar, Salt and Curry Powder, Milo. The peanut guard
+* keeps Peanut Butter out of control (the colleague drops it).
+replace treat = 0 if missing(treat) & regexm(item_name_clean, "cereal")
+replace treat = 0 if missing(treat) & regexm(item_name_clean, "sausage")
+replace treat = 0 if missing(treat) & regexm(item_name_clean, "powderedmilk")
+replace treat = 0 if missing(treat) & regexm(item_name_clean, "margarine")
+replace treat = 0 if missing(treat) & regexm(item_name_clean, "butter") & !regexm(item_name_clean, "peanut")
+replace treat = 0 if missing(treat) & regexm(item_name_clean, "sugar")
+replace treat = 0 if missing(treat) & regexm(item_name_clean, "salt")
+replace treat = 0 if missing(treat) & regexm(item_name_clean, "milo")
+
+* Report and drop classes not in either list
+levelsof item_name if missing(treat), local(dropped) clean
+display as text "  Dropped (not in colleague treat/control lists):"
+foreach d of local dropped {
+    display as text "    `d'"
+}
+drop if missing(treat)
 
 * Summary
 quietly count if treat == 1
