@@ -30,7 +30,7 @@ Data collected by the authors (Sources 2, 4, and 5) are archived in the World Ba
 | # | Source | Provider | Access | Link or contact | Accessed |
 |---|--------|----------|--------|-----------------|----------|
 | 1 | Phone survey, household food module (`PNG_HFPS_Household_weighted_wFood.dta`) | World Bank High-Frequency Phone Survey, Papua New Guinea | Restricted, licensed | https://microdata.pacificdata.org/index.php/catalog/877 | 2026-04 |
-| 2 | Expert prediction survey (`experts_survey.csv`) | Authors, fielded via Qualtrics | Public | [MICRODATA LIBRARY URL] | [YYYY-MM] |
+| 2 | Expert prediction survey (`experts_survey.csv`) | Authors, fielded via Qualtrics | Public | [MICRODATA LIBRARY URL] | 2025-07 to 2025-09 |
 | 3 | 2011 census population by district (`png_admpop_adm2_2011_v2.csv`) | PNG National Statistical Office, distributed via HDX | Public | https://data.humdata.org/dataset/cod-ps-png |  |
 | 4 | Store price collection, Port Moresby (`POM PRICE COLLECTION.xlsx`) | Authors, field collection | Public | [MICRODATA LIBRARY URL] | 2025-05 to 2025-10 |
 | 5 | Online store prices (`foodpro/*.csv`, `rh/*.csv`) | Authors, web scraping of `rhtradingpng.com` and `fpr.com.pg` | Public | [MICRODATA LIBRARY URL] | 2025-05 to 2025-08 |
