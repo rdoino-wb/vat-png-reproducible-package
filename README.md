@@ -31,12 +31,12 @@ Data collected by the authors (Sources 2, 4, and 5) are archived in the World Ba
 |---|--------|----------|--------|-----------------|----------|
 | 1 | Phone survey, household food module (`PNG_HFPS_Household_weighted_wFood.dta`) | World Bank High-Frequency Phone Survey, Papua New Guinea | Restricted, licensed | https://microdata.pacificdata.org/index.php/catalog/877 | 2026-04 |
 | 2 | Expert prediction survey (`experts_survey.csv`) | Authors, fielded via Qualtrics | Public | [MICRODATA LIBRARY URL] | [YYYY-MM] |
-| 3 | 2011 census population by district (`png_admpop_adm2_2011_v2.csv`) | PNG National Statistical Office, distributed via HDX | Public | https://data.humdata.org/dataset/cod-ps-png | [YYYY-MM] |
+| 3 | 2011 census population by district (`png_admpop_adm2_2011_v2.csv`) | PNG National Statistical Office, distributed via HDX | Public | https://data.humdata.org/dataset/cod-ps-png |  |
 | 4 | Store price collection, Port Moresby (`POM PRICE COLLECTION.xlsx`) | Authors, field collection | Public | [MICRODATA LIBRARY URL] | 2025-05 to 2025-10 |
-| 5 | Online store prices (`foodpro/*.csv`, `rh/*.csv`) | Authors, web scraping of `rhtradingpng.com` and `fpr.com.pg` | Public | [MICRODATA LIBRARY URL] | [YYYY-MM to YYYY-MM] |
-| 6 | Retail Price Index (`World_Bank__RPI_Data_Request.xlsx`) | Bank of Papua New Guinea | Restricted, not redistributable | Data request to [BPNG CONTACT] | [YYYY-MM] |
-| 7 | Administrative prices and quarterly CPI (`Comparision_Group.xlsx`, `GST exempt goods WB tracking - Edited.xlsx`, `Table_13_December_Qtr_2025.xlsx`) | PNG National Statistical Office | Restricted, except the published Table 13 CPI release | Data request to [NSO CONTACT]; CPI release at [NSO CPI URL] | [YYYY-MM] |
-| 8 | Business Sentiment Survey (`Copy_of_Wholesale_retail_competition.xlsx`, `World_Bank_request.xlsx`) | Bank of Papua New Guinea Business Sentiment Survey | Restricted, not redistributable | Data request to [BPNG CONTACT] | [YYYY-MM] |
+| 5 | Online store prices (`foodpro/*.csv`, `rh/*.csv`) | Authors, web scraping of `rhtradingpng.com` and `fpr.com.pg` | Public | [MICRODATA LIBRARY URL] | 2025-05 to 2025-08 |
+| 6 | Retail Price Index (`World_Bank__RPI_Data_Request.xlsx`) | Bank of Papua New Guinea | Restricted, not redistributable | Data request to ilibitino@bankpng.gov.pg | 2026-05 |
+| 7 | Administrative prices and quarterly CPI (`Comparision_Group.xlsx`, `GST exempt goods WB tracking - Edited.xlsx`, `Table_13_December_Qtr_2025.xlsx`) | PNG National Statistical Office | Restricted, except the published Table 13 CPI release | Data request to barry.lei@nso.gov.pg; CPI release at https://www.nso.gov.pg/statistics/economy/consumer-price-index | 2026-04 |
+| 8 | Business Sentiment Survey (`Copy_of_Wholesale_retail_competition.xlsx`, `World_Bank_request.xlsx`) | Bank of Papua New Guinea Business Sentiment Survey | Restricted, not redistributable | Data request to ilibitino@bankpng.gov.pg | 2026-07 |
 
 ### Notes on individual sources
 
