@@ -23,29 +23,44 @@ A reviewer runs the whole package after changing one line in each master script 
 
 ## Data availability
 
-Some data cannot be made publicly available, so this repository ships code and documentation only. No raw or intermediate data is included. Before running, place the data under a `Data/` folder matching the paths in `main.do` Section 1. The full statement, with every source, its access route, and shareability, is in [`docs/data_availability.md`](docs/data_availability.md).
+Summary classification: some data cannot be made publicly available. This repository ships code and documentation only. No raw or intermediate data is included. Before running, place the data under a `Data/` folder matching the paths in `main.do` Section 1.
 
-Origin of each input:
+Data collected by the authors (Sources 2, 4, and 5) are archived in the World Bank Microdata Library and are publicly accessible at the links below, in line with World Bank policy on data created for Bank projects.
 
-- Phone survey microdata (household food module): World Bank High-Frequency Phone Survey, Papua New Guinea. Restricted household microdata, obtained through the World Bank survey team and Microdata Library. Not redistributable.
-- Expert prediction survey: own collection via Qualtrics. Respondent-level, restricted. Available from the authors de-identified on request.
-- 2011 census population by district: PNG National Statistical Office, distributed through HDX (https://data.humdata.org/dataset/cod-ps-png). Public aggregate.
-- Store price collection (Port Moresby): own field collection. Available from the authors on request.
-- Online store prices: own collection via web scraping of `rhtradingpng.com` and `fpr.com.pg` (see below).
-- Retail Price Index and Business Sentiment Survey: Bank of Papua New Guinea, obtained by data request. Restricted, not redistributable.
-- NSO administrative prices and CPI (including the December 2025 quarterly CPI release): PNG National Statistical Office, obtained by data request or from the published release.
+| # | Source | Provider | Access | Link or contact | Accessed |
+|---|--------|----------|--------|-----------------|----------|
+| 1 | Phone survey, household food module (`PNG_HFPS_Household_weighted_wFood.dta`) | World Bank High-Frequency Phone Survey, Papua New Guinea | Restricted, licensed | https://microdata.pacificdata.org/index.php/catalog/877 | 2026-04 |
+| 2 | Expert prediction survey (`experts_survey.csv`) | Authors, fielded via Qualtrics | Public | [MICRODATA LIBRARY URL] | [YYYY-MM] |
+| 3 | 2011 census population by district (`png_admpop_adm2_2011_v2.csv`) | PNG National Statistical Office, distributed via HDX | Public | https://data.humdata.org/dataset/cod-ps-png | [YYYY-MM] |
+| 4 | Store price collection, Port Moresby (`POM PRICE COLLECTION.xlsx`) | Authors, field collection | Public | [MICRODATA LIBRARY URL] | 2025-05 to 2025-10 |
+| 5 | Online store prices (`foodpro/*.csv`, `rh/*.csv`) | Authors, web scraping of `rhtradingpng.com` and `fpr.com.pg` | Public | [MICRODATA LIBRARY URL] | [YYYY-MM to YYYY-MM] |
+| 6 | Retail Price Index (`World_Bank__RPI_Data_Request.xlsx`) | Bank of Papua New Guinea | Restricted, not redistributable | Data request to [BPNG CONTACT] | [YYYY-MM] |
+| 7 | Administrative prices and quarterly CPI (`Comparision_Group.xlsx`, `GST exempt goods WB tracking - Edited.xlsx`, `Table_13_December_Qtr_2025.xlsx`) | PNG National Statistical Office | Restricted, except the published Table 13 CPI release | Data request to [NSO CONTACT]; CPI release at [NSO CPI URL] | [YYYY-MM] |
+| 8 | Business Sentiment Survey (`Copy_of_Wholesale_retail_competition.xlsx`, `World_Bank_request.xlsx`) | Bank of Papua New Guinea Business Sentiment Survey | Restricted, not redistributable | Data request to [BPNG CONTACT] | [YYYY-MM] |
 
-### Web-scraped online prices
+### Notes on individual sources
 
-The online prices behind Figure 4d come from two retailer websites, `rhtradingpng.com` and `fpr.com.pg`, collected with the scrapers in `4_online_appendix/web_scraping/` (`run_all.py`, `rh_script.py`, `foodpro_script.py`). The scrapers require a manual Cloudflare check mid-run, so they are a one-off collection tool, not an automated pipeline step. The exact price snapshots cannot be re-collected on demand: the live sites change over time and prior pages are not archived here. The dated CSVs the scrapers produced feed `build_online_prices.do`. Those CSVs are not shipped; request them from the authors, or re-run the scrapers to gather a new snapshot.
+Source 1. The extract used here sits in a dated subfolder (`20260429`) and is derived from the Pacific Data Hub catalog entry above, reference `SPC_PNG_2023_HFPS-Q2`. [CONFIRM whether the file is the public-use version or an internal pre-release from the survey team; if internal, cite the internal version and keep the catalog URL as provenance.]
+
+Sources 2 and 4. Direct identifiers were removed before archiving: respondent email address, IP address, and geolocation in the expert survey; enumerator names in the store price workbook.
+
+Source 5. The scrapers (`4_online_appendix/web_scraping/`) require a manual browser verification step mid-run, so they are a one-off collection tool, not an automated pipeline step. The exact snapshots cannot be re-collected: the live sites change over time and prior pages are not archived. The archived files contain prices, standardized item codes, and collection dates; verbatim product text and URLs are excluded. The dated CSVs feed `build_online_prices.do`.
+
+### Restrictions on access, publication, and retention
+
+Sources 1, 6, 7, and 8 are not redistributable under the terms set by the data providers. Only derived, non-identifying results appear in the paper. Sources 2, 4, and 5 are released without restriction through the Microdata Library.
+
+### Rights statement
+
+The authors have legitimate access to and permission to use all data used in the manuscript.
 
 ## Instructions for replicators
 
 1. Obtain the data (see the availability statement) and place the files under `Data/Raw/…` following the folder names in `main.do` Section 1 (`census`, `experts_survey`, `phone_survey`, `store_collection`, `e_store_collection`, `rpi`, `nso`, `sentiment`). The phone survey extract sits in a dated subfolder (`20260429`).
 2. Install the software and packages in [Requirements](#requirements).
 3. Open `main.do`. Set the top-level directory on the single line marked `CHANGE ONLY THIS ONE LINE`:
-   - `main.do`, line 35: `global root "…"`
-4. Run `main.do`. It prepares the data and pauses with an on-screen instruction.
+   - `main.do`, line 37: `global root "…"`
+4. Run `main.do`. It prepares the data and pauses with an on-screen instruction. The pause requires interactive Stata; running `main.do` in batch mode will not stop at the R stage.
 5. Open `main.R`. Set the same directory:
    - `main.R`, line 26: `root <- "…"`
    Run `main.R` fully. It writes Figures 1 and 2 and two intermediate datasets.
@@ -57,15 +72,17 @@ The run order is fixed by the master scripts. Data-prep files are numbered in ru
 
 Every table and figure, mapped to its output file, script, and export line, is in [`docs/exhibit_manifest.md`](docs/exhibit_manifest.md). Figure filenames do not always match the exhibit number in the paper (for example Figure 4d exports to the `event_study/` subfolder); the manifest gives the exact mapping.
 
-The code reproduces the tables and figures listed in the manifest. Exhibits not listed there (if any in the manuscript) are not generated by this package; see the "To confirm" note in the manifest.
+The code reproduces the tables and figures listed in the manifest. Exhibits in the manuscript that do not appear there (for example a descriptive Table 1 or Table A1, and appendix figures A8, A9, A16) are not generated by this package; they are built by hand or excluded by design. See the Notes section of the manifest.
+
+`docs/exhibits.tex` compiles all figures and tables in paper order and is the only copy of that file.
 
 ## Requirements
 
 ### Software
 
 - **Stata 17.** User-written packages (installed automatically by `main.do` Section 3 via `ssc install`): `estout`, `gtools`, `winsor2`, `reghdfe`, `ftools`, `regsave`, `mmat2tex`, `boottest`, `distinct`.
-- **R** (4.x recommended). Packages (installed automatically by `main.R` if missing): `tidyverse`, `sf`, `ggplot2`, `dplyr`, `readr`, `haven`, `viridis`, `scales`, `RColorBrewer`, `cowplot`, `knitr`, `readxl`, `data.table`, `osmdata`.
-- **Python 3** (only to re-run the online-price scrapers, optional): `selenium`, `undetected_chromedriver`, plus the local `utils` helper. The scrapers need a manual Cloudflare step and are not part of the automated run.
+- **R** [VERSION USED, e.g. 4.4.1]. Packages (installed automatically by `main.R` if missing): `tidyverse`, `sf`, `ggplot2`, `dplyr`, `readr`, `haven`, `viridis`, `scales`, `RColorBrewer`, `cowplot`, `knitr`, `readxl`, `data.table`, `osmdata`.
+- **Python** [VERSION USED, e.g. 3.11] (only to re-run the online-price scrapers, optional): `selenium`, `undetected_chromedriver`, `certifi`, plus the local helper `4_online_appendix/web_scraping/utils.py`. The scrapers need a manual Cloudflare step and are not part of the automated run.
 
 ### Runtime and storage
 
@@ -82,7 +99,7 @@ main.R    R master: builds Figures 1 and 2, writes intermediates for Stata
 3_analysis/    Tables and figures (named by exhibit)
 4_online_appendix/  Online-price cleaning, Figure 4d, and the scrapers
 5_experts/     Expert prediction survey figures and Table A5
-docs/          Data availability statement, exhibit manifest, and exhibits.tex (compiles all figures/tables in paper order)
+docs/          Exhibit manifest and exhibits.tex (compiles all figures/tables in paper order)
 ```
 
 Data-prep files are numbered in run order. Analysis files are named by the exhibit they produce (for example `table2_passthrough.do`, `fig5_incidence.do`, `figA19_event_study_hh.do`), so the manifest maps cleanly to filenames. Each script carries a header block stating its purpose, inputs, outputs, and dependencies.
